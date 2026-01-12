@@ -1,0 +1,39 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ca2d2f5518cf3434490c0a07eff6955d, type: 3}
+  m_Name: cutTestCardLeft
+  m_EditorClassIdentifier: Assembly-CSharp::CardDefinition
+  baseId: CUTTEST_001
+  topLeft:
+    cornerColor: 0
+    value: 3
+    effect: 0
+    effectColor: 0
+    namePart: 
+  topRight:
+    cornerColor: 3
+    value: 2
+    effect: 0
+    effectColor: 0
+    namePart: 
+  bottomLeft:
+    cornerColor: 0
+    value: 2
+    effect: 1
+    effectColor: 0
+    namePart: Heavy
+  bottomRight:
+    cornerColor: 3
+    value: 5
+    effect: 3
+    effectColor: 3
+    namePart: Wave
