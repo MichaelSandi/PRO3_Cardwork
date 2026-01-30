@@ -1,48 +1,56 @@
-using UnityEngine;
+using System;
 
 public class CardInstance
 {
+    public event Action OnChanged;
+
+    public void NotifyChanged()
+    {
+        OnChanged?.Invoke();
+    }
+    
     public CardCorner topLeft;
     public CardCorner topRight;
     public CardCorner bottomLeft;
     public CardCorner bottomRight;
 
-    // optional: Referenz zum Template, falls benötigt
     public CardDefinition sourceDefinition;
 
-    public CardInstance(CardDefinition definition)
+    public CardInstance(CardDefinition def)
     {
-        sourceDefinition = definition;
-
-        // Runtime-Kopien erstellen
-        topLeft = definition.topLeft.Clone();
-        topRight = definition.topRight.Clone();
-        bottomLeft = definition.bottomLeft.Clone();
-        bottomRight = definition.bottomRight.Clone();
+        sourceDefinition = def;
+        topLeft = def.topLeft.Clone();
+        topRight = def.topRight.Clone();
+        bottomLeft = def.bottomLeft.Clone();
+        bottomRight = def.bottomRight.Clone();
     }
 
-    // Name = Kombination aus den unteren Ecken
     public string GetName()
     {
-        string a = bottomLeft.namePart;
-        string b = bottomRight.namePart;
-
-        if (string.IsNullOrEmpty(a)) a = "";
-        if (string.IsNullOrEmpty(b)) b = "";
-
+        string a = bottomLeft?.namePartText ?? "";
+        string b = bottomRight?.namePartText ?? "";
         return (a + " " + b).Trim();
     }
 
-    // Summiert Werte aller Ecken einer bestimmten Farbe
-    public int GetTotalValueByColor(CardColors color)
+    // Silber zählt in jede Farbsumme rein
+    public int GetSum(CardColors color)
     {
-        int total = 0;
+        int sum = 0;
+        AddCorner(ref sum, topLeft, color);
+        AddCorner(ref sum, topRight, color);
+        AddCorner(ref sum, bottomLeft, color);
+        AddCorner(ref sum, bottomRight, color);
+        return sum;
+    }
 
-        if (topLeft.cornerColor == color) total += topLeft.value;
-        if (topRight.cornerColor == color) total += topRight.value;
-        if (bottomLeft.cornerColor == color) total += bottomLeft.value;
-        if (bottomRight.cornerColor == color) total += bottomRight.value;
+    private static void AddCorner(ref int sum, CardCorner c, CardColors queryColor)
+    {
+        if (c == null) return;
 
-        return total;
+        bool matches =
+            c.color == queryColor ||
+            c.color == CardColors.Silver; // <- Silber zählt immer mit
+
+        if (matches) sum += c.value;
     }
 }

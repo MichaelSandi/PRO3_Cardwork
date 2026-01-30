@@ -8,6 +8,10 @@ public static class CardCutter
 
         // Swap TopRight
         (cardA.topRight, cardB.topRight) = (cardB.topRight, cardA.topRight);
+        
+        // Notify changes
+        cardA.NotifyChanged();
+        cardB.NotifyChanged();
     }
 
     // Vertikaler Schnitt: swap left corners
@@ -18,5 +22,9 @@ public static class CardCutter
 
         // Swap BottomLeft
         (cardA.bottomLeft, cardB.bottomLeft) = (cardB.bottomLeft, cardA.bottomLeft);
+        
+        // Notify changes
+        cardA.NotifyChanged();
+        cardB.NotifyChanged();
     }
 }

@@ -1,0 +1,40 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6956ee96cb15c2841b37e5cef7d9b8bd, type: 3}
+  m_Name: Default_SpriteLibrary
+  m_EditorClassIdentifier: Assembly-CSharp::CornerColorSpriteLibrary
+  spriteSets:
+  - color: 0
+    topLeft: {fileID: 21300000, guid: 71b9d5747edbc324abec583335db3a1d, type: 3}
+    topRight: {fileID: 21300000, guid: 62c4704a04d797b4782bd7eb1835d066, type: 3}
+    bottomLeft: {fileID: 21300000, guid: 3114e247bb369fd46942ef62e4ed9e32, type: 3}
+    bottomRight: {fileID: 21300000, guid: 7b5f372f8c3da6d49a5749f6b8b9310f, type: 3}
+  - color: 1
+    topLeft: {fileID: 21300000, guid: 0cb9ffcbbbde456499f886491fd8bcc2, type: 3}
+    topRight: {fileID: 21300000, guid: c1bae0dde2b895746aa827e3ce573fd9, type: 3}
+    bottomLeft: {fileID: 21300000, guid: 5b54a59da2432bc4fbb4221501ea8366, type: 3}
+    bottomRight: {fileID: 21300000, guid: 1daa4efe69416c842948676029ceabe7, type: 3}
+  - color: 2
+    topLeft: {fileID: 21300000, guid: 4edf9f09ef806084e9f4252a2621ec1c, type: 3}
+    topRight: {fileID: 21300000, guid: 45b5cfb565001a2478fd079d353bf86b, type: 3}
+    bottomLeft: {fileID: 21300000, guid: 5b878aae4eeb65745a8f2f002d3c5ae3, type: 3}
+    bottomRight: {fileID: 21300000, guid: fa9bdacaf71859a418ab0e8db02dab56, type: 3}
+  - color: 3
+    topLeft: {fileID: 21300000, guid: 9ba2c0b74afcd3240b9d83f0e7225530, type: 3}
+    topRight: {fileID: 21300000, guid: 75fbc914960338642905b1f4ff623bbd, type: 3}
+    bottomLeft: {fileID: 21300000, guid: 3305119b8ae51aa419d5569919140e01, type: 3}
+    bottomRight: {fileID: 21300000, guid: 585a6901ccb6ebe46aa23bda82f22112, type: 3}
+  - color: 4
+    topLeft: {fileID: 21300000, guid: 0f3b60b8f2412e840981f9fe0cdf9ad8, type: 3}
+    topRight: {fileID: 21300000, guid: 49d8221da219a0447b4c53f79d14b8c6, type: 3}
+    bottomLeft: {fileID: 21300000, guid: 6f4f8ca9c2a0a8d4aa42edf560f92950, type: 3}
+    bottomRight: {fileID: 21300000, guid: fa482fd3d3354d74faad02880a32faa1, type: 3}

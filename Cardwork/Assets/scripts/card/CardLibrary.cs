@@ -43,7 +43,7 @@ public class CardLibrary : MonoBehaviour
     public CardInstance GetRandomCardInstance()
     {
         if (allCards.Count == 0) return null;
-        int randomIndex = UnityEngine.Random.Range(0, allCards.Count);
+        int randomIndex = Random.Range(0, allCards.Count);
         return GetCardInstance(randomIndex);
     }
 }

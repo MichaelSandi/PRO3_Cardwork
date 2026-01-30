@@ -1,0 +1,55 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ca2d2f5518cf3434490c0a07eff6955d, type: 3}
+  m_Name: cutTestCardLeft
+  m_EditorClassIdentifier: Assembly-CSharp::CardDefinition
+  baseId: CUTTEST_001
+  topLeft:
+    color: 2
+    value: 4
+    namePartText: 
+    effectModule:
+      type: 0
+      xColor: 3
+      yColor: 3
+      damageDistribution: 0
+      effectTextOverride: 
+  topRight:
+    color: 3
+    value: 1
+    namePartText: 
+    effectModule:
+      type: 0
+      xColor: 3
+      yColor: 3
+      damageDistribution: 0
+      effectTextOverride: 
+  bottomLeft:
+    color: 2
+    value: 3
+    namePartText: Metal
+    effectModule:
+      type: 2
+      xColor: 3
+      yColor: 4
+      damageDistribution: 0
+      effectTextOverride: 
+  bottomRight:
+    color: 3
+    value: 2
+    namePartText: Life
+    effectModule:
+      type: 1
+      xColor: 2
+      yColor: 4
+      damageDistribution: 0
+      effectTextOverride: 
