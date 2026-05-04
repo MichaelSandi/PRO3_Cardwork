@@ -7,14 +7,19 @@ public class MouseClickRaycaster : MonoBehaviour
 {
     [SerializeField] private Camera cam;
     [SerializeField] private LayerMask clickableMask;
-    
+
     private CutLineInput hoveredLine;
     private HandInteractionController controller;
+
+    private EnemyInput hoveredEnemy;
+    private CombatManager combat;
+
 
     private void Awake()
     {
         if (cam == null) cam = Camera.main;
         controller = FindFirstObjectByType<HandInteractionController>();
+        combat = FindFirstObjectByType<CombatManager>();
     }
 
     private void Update()
@@ -29,18 +34,43 @@ public class MouseClickRaycaster : MonoBehaviour
         UpdateHover();
         HandleClick();
     }
-    
+
     private void UpdateHover()
     {
-        // Hover nur relevant im CutAxisMode
-        if (controller == null || controller.mode != HandInteractionController.InteractionMode.CutAxisMode)
+        if (Mouse.current == null || cam == null) return;
+
+        // UI blockt Worldspace
+        if (UnityEngine.EventSystems.EventSystem.current != null &&
+            UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject())
         {
             SetHoveredLine(null);
+            SetHoveredEnemy(null);
             return;
         }
 
-        if (Mouse.current == null || cam == null) return;
+        // Priorität 1: CutAxisMode (Linien hover)
+        if (controller != null && controller.mode == HandInteractionController.InteractionMode.CutAxisMode)
+        {
+            SetHoveredEnemy(null); // keine enemy hover gleichzeitig
+            HoverCutLines();
+            return;
+        }
 
+        // Priorität 2: TargetSelectMode (Enemy hover)
+        if (combat != null && combat.IsWaitingForTarget)
+        {
+            SetHoveredLine(null);
+            HoverEnemies();
+            return;
+        }
+
+        // sonst: alles aus
+        SetHoveredLine(null);
+        SetHoveredEnemy(null);
+    }
+
+    private void HoverCutLines()
+    {
         Vector2 mousePos = Mouse.current.position.ReadValue();
         Ray ray = cam.ScreenPointToRay(mousePos);
 
@@ -54,6 +84,32 @@ public class MouseClickRaycaster : MonoBehaviour
             SetHoveredLine(null);
         }
     }
+
+    private void HoverEnemies()
+    {
+        Vector2 mousePos = Mouse.current.position.ReadValue();
+        Ray ray = cam.ScreenPointToRay(mousePos);
+
+        if (Physics.Raycast(ray, out RaycastHit hit, 500f, clickableMask))
+        {
+            var enemy = hit.collider.GetComponentInParent<EnemyInput>();
+            SetHoveredEnemy(enemy);
+        }
+        else
+        {
+            SetHoveredEnemy(null);
+        }
+    }
+
+    private void SetHoveredEnemy(EnemyInput newEnemy)
+    {
+        if (hoveredEnemy == newEnemy) return;
+
+        if (hoveredEnemy != null) hoveredEnemy.SetHovered(false);
+        hoveredEnemy = newEnemy;
+        if (hoveredEnemy != null) hoveredEnemy.SetHovered(true);
+    }
+
 
     private void SetHoveredLine(CutLineInput newLine)
     {
@@ -83,12 +139,24 @@ public class MouseClickRaycaster : MonoBehaviour
                 return;
             }
 
-            // Dann CardInput
-            var card = hit.collider.GetComponentInParent<CardInput>();
-            if (card != null)
+            //Danach EnemyInput
+            var enemy = hit.collider.GetComponentInParent<EnemyInput>();
+            if (enemy != null)
             {
-                card.OnClicked();
+                enemy.OnClicked();
                 return;
+            }
+
+
+            // Dann CardInput
+            if (combat == null || !combat.IsWaitingForTarget)
+            {
+                var card = hit.collider.GetComponentInParent<CardInput>();
+                if (card != null)
+                {
+                    card.OnClicked();
+                    return;
+                }
             }
         }
     }

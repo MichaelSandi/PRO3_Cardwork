@@ -1,5 +1,7 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using System.Collections.Generic;
+using TMPro;
 
 
 public enum CombatState
@@ -13,17 +15,40 @@ public enum CombatState
 
 public class CombatManager : MonoBehaviour
 {
-    public HandView handView;
+    public EncounterDefinition firstEncounter;
+    public EnemyFieldView enemyFieldView;
 
-    public PlayerEntity player;
-    public EnemyEntity enemy;
+    private struct PendingCardPlay
+    {
+        public CardInstance card;
+        public int nextModuleIndex;          // 0 oder 1: ab hier geht’s weiter
+        public bool hasChosenTarget;
+        public EnemyInstance chosenTarget;   // der eine Target für beide Module
+    }
+    
+    private PendingCardPlay pending;
+
+    
+    private bool waitingForTarget = false;
+    public bool IsWaitingForTarget => waitingForTarget;
+    //private TargetRequest pendingRequest;
+    private CardInstance pendingCard;
+
+    [SerializeField] private HandInteractionController handInteraction;
+    
+    public GameObject targetVignetteUI;
+
+
+    public readonly List<EnemyInstance> activeEnemies = new();
+
+    private System.Random rng = new System.Random();
+
+    public HandView handView;
 
     private CombatState state;
     public CombatState State => state;
 
-    public EnemyController enemyController;
-    private EnemyMove currentIntent;
-
+    [Header("Refs")] public PlayerEntity player;
     public PlayerDeck playerDeck;
     public PlayerHand playerHand;
 
@@ -33,14 +58,36 @@ public class CombatManager : MonoBehaviour
     [SerializeField] private int startHandSize = 3;
 
     [SerializeField] private int baseCutsPerRound = 1; // später durch Talismane modifizieren
-    
+
     private int cutsRemainingThisRound;
     public int CutsRemainingThisRound => cutsRemainingThisRound;
+
+    public void ToggleSelectForCutInstance(CardInstance card)
+    {
+        if (card == null || playerHand == null) return;
+        int idx = playerHand.cards.IndexOf(card);
+        if (idx == -1) return;
+        ToggleSelectForCut(idx);
+    }
+
+    // Inspect whether an instance is currently selected
+    public bool IsInstanceSelected(CardInstance card)
+    {
+        if (card == null || playerHand == null) return false;
+        int idx = playerHand.cards.IndexOf(card);
+        if (idx == -1) return false;
+        return idx == selectedA || idx == selectedB;
+    }
 
     private int GetCutsPerRound()
     {
         // Später: baseCutsPerRound + talismanBonusCuts
         return Mathf.Max(0, baseCutsPerRound);
+    }
+
+    public void ClearSelectionPublic()
+    {
+        ClearSelection();
     }
 
     private void ClearSelection()
@@ -53,82 +100,118 @@ public class CombatManager : MonoBehaviour
     private void Awake()
     {
         if (player == null) player = FindFirstObjectByType<PlayerEntity>();
-        if (enemy == null) enemy = FindFirstObjectByType<EnemyEntity>();
-        if (enemyController == null) enemyController = FindFirstObjectByType<EnemyController>();
         if (playerDeck == null) playerDeck = FindFirstObjectByType<PlayerDeck>();
         if (playerHand == null) playerHand = FindFirstObjectByType<PlayerHand>();
         if (handView == null) handView = FindFirstObjectByType<HandView>();
-
+        if (handInteraction == null) handInteraction = FindFirstObjectByType<HandInteractionController>();
+        if (targetVignetteUI == null) targetVignetteUI.SetActive(false);
     }
 
     private void Start()
     {
+        // BuildEncounter(firstEncounter);
+        //
+        // player.ResetForCombat();
+        //
+        // // 1) Events zuerst verbinden
+        // // playerHand.OnCardAdded += handView.AddCard;
+        // // playerHand.OnCardRemoved += handView.RemoveCard;
+        // playerHand.OnHandChanged += () => handView.Rebuild(playerHand.cards);
+        // handView.Rebuild(playerHand.cards); // initial sync
+        //
+        //
+        // // 2) Deck bauen
+        // playerDeck.BuildStartingDeck();
+        //
+        // // 3) Start-Hand ziehen (feuert Events -> Views spawnen)
+        // DrawStartingHand();
+        //
+        // // 4) Combat starten
+        // state = CombatState.EnemyChooseIntent;
+        // //Debug.Log("Combat started.");
+        //
+        // AdvanceState();
+    }
+    
+    public void StartEncounter(EncounterDefinition encounter, RunManager run)
+    {
+        // 0) Cleanup vom vorherigen Fight
+        waitingForTarget = false;
+        pending = default;
+        ExitTargetSelectMode();
+
+        playerHand.Clear();          // brauchst du evtl. implementieren (cards.Clear + OnHandChanged)
+        playerDeck.ClearAll();       // Draw/Discard clearen (implementieren falls nicht vorhanden)
+
+        // 1) Player Werte aus Run übernehmen
         player.ResetForCombat();
-        enemy.ResetForCombat();
-        
-        // 1) Events zuerst verbinden
-        // playerHand.OnCardAdded += handView.AddCard;
-        // playerHand.OnCardRemoved += handView.RemoveCard;
+        player.hp = run.currentHp;
+        player.maxHP = run.maxHp;    // falls du maxHP im Run speicherst
+
+        // 2) Deck aus Run übernehmen (WICHTIG: gleiche CardInstances!)
+        playerDeck.SetCards(run.deck);  // diese Methode hast du in Schritt 5 schon angepasst
+
+        // 3) Encounter spawnen
+        BuildEncounter(encounter);
+
+        // 4) Hand Events verbinden (wie du es schon hast)
         playerHand.OnHandChanged += () => handView.Rebuild(playerHand.cards);
-        handView.Rebuild(playerHand.cards); // initial sync
+        handView.Rebuild(playerHand.cards);
 
-
-        // 2) Deck bauen
-        playerDeck.BuildStartingDeck();
-        
-        // 3) Start-Hand ziehen (feuert Events -> Views spawnen)
+        // 5) Start-Hand ziehen
         DrawStartingHand();
         
-        // 4) Combat starten
+        // 6) UI aktualisieren
+        player.RefreshUI();
+
+        // 7) State starten
         state = CombatState.EnemyChooseIntent;
-        //Debug.Log("Combat started.");
-        
         AdvanceState();
     }
 
+    
+
     private void Update()
     {
-        var kb = UnityEngine.InputSystem.Keyboard.current;
-
-        if (state == CombatState.PlayerPlayCard)
+        var kb = Keyboard.current;
+        if (kb == null) return;
+        if (kb.sKey.wasPressedThisFrame)
         {
-            if (kb == null) return;
+            // Debug.Log($"Player-HP: {player.hp}/{player.maxHP} | Player-Armor: {player.armor}");
+            Debug.Log($"Current State: {state}");
+            
+        }
 
-            // 1) Auswahl per 1..7 togglen (für Cutting)
-            int pressedIndex = -1;
-            if (kb.digit1Key.wasPressedThisFrame) pressedIndex = 0;
-            else if (kb.digit2Key.wasPressedThisFrame) pressedIndex = 1;
-            else if (kb.digit3Key.wasPressedThisFrame) pressedIndex = 2;
-            else if (kb.digit4Key.wasPressedThisFrame) pressedIndex = 3;
-            else if (kb.digit5Key.wasPressedThisFrame) pressedIndex = 4;
-            else if (kb.digit6Key.wasPressedThisFrame) pressedIndex = 5;
-            else if (kb.digit7Key.wasPressedThisFrame) pressedIndex = 6;
-
-            if (pressedIndex != -1)
-                ToggleSelectForCut(pressedIndex);
-
-            // 2) Cut ausführen, wenn 2 ausgewählt
-            if (kb.hKey.wasPressedThisFrame)
-                TryCut(horizontal: true);
-
-            if (kb.vKey.wasPressedThisFrame)
-                TryCut(horizontal: false);
-
-            // 3) Karte spielen: SPACE spielt "selectedA"
-            if (kb.spaceKey.wasPressedThisFrame)
+        if (kb.aKey.wasPressedThisFrame)
+        {
+            foreach (var enemy in activeEnemies)
             {
-                if (selectedA == -1)
-                {
-                    Debug.Log("No card selected to play. Select a card (1..7), then press SPACE.");
-                }
-                else
-                {
-                    TryPlayCardAt(selectedA);
-                    ClearSelection(); // nach dem Spielen Selection reset
-                }
+                if (enemy == null) continue;
+                Debug.Log($"Enemy: {enemy.def.name} | HP: {enemy.hp}/{enemy.def.maxHP} | Armor: {enemy.armor} | Marked: {enemy.marked} | Burning: {enemy.burning} | Weakened: {enemy.weakened}");
             }
         }
     }
+
+    public void BuildEncounter(EncounterDefinition encounter)
+    {
+        activeEnemies.Clear();
+
+        if (encounter == null)
+        {
+            Debug.LogError("No encounter provided!");
+            return;
+        }
+
+        foreach (var def in encounter.enemies)
+        {
+            if (def == null) continue;
+            activeEnemies.Add(new EnemyInstance(def));
+        }
+
+        if (enemyFieldView == null) enemyFieldView = FindFirstObjectByType<EnemyFieldView>();
+        enemyFieldView.Rebuild(activeEnemies);
+    }
+
 
     private void DrawStartingHand()
     {
@@ -173,8 +256,14 @@ public class CombatManager : MonoBehaviour
 
     private void HandleEnemyChooseIntent()
     {
-        currentIntent = enemyController.ChooseIntent();
-        Debug.Log($"Enemy intent: {currentIntent.moveName} ({currentIntent.damage} dmg)");
+        // Intents wählen
+        foreach (var enemy in activeEnemies)
+        {
+            if (enemy == null || enemy.IsDead) continue;
+            enemy.OnTurnStart();
+            enemy.ChooseIntent();
+        }
+        enemyFieldView.Rebuild(activeEnemies);
 
         state = CombatState.PlayerDraw;
         AdvanceState();
@@ -208,20 +297,23 @@ public class CombatManager : MonoBehaviour
     {
         cutsRemainingThisRound = GetCutsPerRound();
         Debug.Log($"Cuts available this round: {cutsRemainingThisRound}");
-        Debug.Log("Select cards with 1..7. Press H/V to cut. Press SPACE to play selected card.");
-
-        playerHand.DebugPrintHand();
     }
 
 
     private void HandleEnemyExecuteIntent()
     {
-        enemyController.ExecuteIntent(player);
+        // Intent ausführen
+        var ctx = new CombatContext(player, playerDeck, playerHand, activeEnemies, rng);
 
+        foreach (var enemy in activeEnemies)
+        {
+            if (enemy == null || enemy.IsDead) continue;
+            EnemyMoveResolver.ExecuteMove(enemy, enemy.plannedMove, ctx);
+        }
+        
         state = CombatState.EndRound;
         AdvanceState();
     }
-
 
     private void HandleEndRound()
     {
@@ -229,85 +321,103 @@ public class CombatManager : MonoBehaviour
 
         if (player.IsDead())
         {
-            Debug.Log("PLAYER DIED – GAME OVER");
+            //Debug.Log("PLAYER DIED – GAME OVER");
+            GameFlowController.Instance.OnPlayerDied();
             return;
         }
 
-        if (enemy.IsDead())
+
+        //prüfen ob alle Gegner tot sind
+        if (AllEnemiesDead())
         {
-            Debug.Log("ENEMY DIED – YOU WIN");
+            Debug.Log("COMBAT WON");
+
+            // HP in RunState zurückschreiben
+            RunManager.Instance.currentHp = player.hp;
+            player.RefreshUI();
+            GameFlowController.Instance.OnCombatWon();
             return;
         }
 
         state = CombatState.EnemyChooseIntent;
         AdvanceState();
     }
-
-    // Wird später von Input / CardPlay aufgerufen
-    public void OnPlayerPlayedCard()
+    
+    private bool AllEnemiesDead()
     {
+        for (int i = 0; i < activeEnemies.Count; i++)
+            if (activeEnemies[i] != null && !activeEnemies[i].IsDead)
+                return false;
+        return true;
+    }
+    
+
+    public void TryPlayCard(CardInstance card)
+    {
+        if (state != CombatState.PlayerPlayCard) return;
+        if (waitingForTarget) return;                // wichtig: keine zweite Karte während Targeting
+        if (card == null) return;
+        if (!playerHand.cards.Contains(card)) return;
+
+        // Karte aus Hand raus
+        playerHand.Remove(card);
+        handView.Rebuild(playerHand.cards);
+
+        var ctx = new CombatContext(player, playerDeck, playerHand, activeEnemies, rng);
+
+        var res = CardResolver.ResolveFrom(card, ctx, startIndex: 0, chosenTarget: null);
+
+        if (res.needsTarget)
+        {
+            waitingForTarget = true;
+            pending = new PendingCardPlay
+            {
+                card = card,
+                nextModuleIndex = res.nextModuleIndex,  // 0 oder 1
+                hasChosenTarget = false,
+                chosenTarget = null
+            };
+
+            EnterTargetSelectMode();
+            enemyFieldView.RefreshAll();
+            return;
+        }
+
+        // fertig ohne Target
+        FinishCardPlay(card);
+    }
+    
+    private void FinishCardPlay(CardInstance card)
+    {
+        playerDeck.Discard(card);
+
+        handView.Rebuild(playerHand.cards);
+        enemyFieldView.RefreshAll();
+
         state = CombatState.EnemyExecuteIntent;
         AdvanceState();
     }
 
-    private void TryPlayCardAt(int index)
+
+
+    private void EnterTargetSelectMode()
     {
-        var card = playerHand.GetAt(index);
-        if (card == null)
-        {
-            Debug.Log("No card at that slot.");
-            return;
-        }
-
-        Debug.Log($"Playing card: {card.GetName()}");
-
-        // Effekte ausführen
-        CardResolver.Play(card, player, enemy);
-
-        // Blaues Draw nachziehen
-        int draw = CardResolver.GetBlueDraw(card);
-        // for (int i = 0; i < draw; i++)
-        // {
-        //     var extra = playerDeck.DrawOne();
-        //     if (extra == null) break;
-        //
-        //     bool added = playerHand.Add(extra);
-        //     if (!added)
-        //     {
-        //         playerDeck.PutBackOnTop(extra);
-        //         Debug.Log("Blue draw failed – hand full, card returned to deck.");
-        //         break;
-        //     }
-        // }
-
-        // Discard + aus Hand entfernen
-        playerDeck.Discard(card);
-        playerHand.Remove(card);
-
-        // Turn weiter
-        OnPlayerPlayedCard();
+        //activate Vignette for Target Selection
+        if(targetVignetteUI!=null) targetVignetteUI.SetActive(true);
+        
+        //Karten-Interaktion deaktivieren, Enemy-Interaktion aktivieren
+        if (handInteraction != null)
+            handInteraction.SetCardsLocked(true);
     }
-    
-    public void TryPlayCard(CardInstance card)
+
+    private void ExitTargetSelectMode()
     {
-        if (state != CombatState.PlayerPlayCard)
-        {
-            Debug.Log("Cannot play card right now (wrong state).");
-            return;
-        }
-
-        if (card == null) return;
-
-        // Sicherstellen, dass die Karte wirklich in der Hand ist
-        int index = playerHand.cards.IndexOf(card);
-        if (index == -1)
-        {
-            Debug.LogWarning("Tried to play a card that is not in hand.");
-            return;
-        }
-
-        // Nutze deine bestehende Logik, aber mit Index oder direkt Card
-        TryPlayCardAt(index); // wenn das existiert und sauber ist
+        //deactivate Vignette for Target Selection
+        if(targetVignetteUI!=null) targetVignetteUI.SetActive(false);
+        
+        //Zurück in PlayMode Interaction
+        if (handInteraction != null)
+            handInteraction.SetCardsLocked(false);
     }
 
 
@@ -324,14 +434,12 @@ public class CombatManager : MonoBehaviour
         {
             selectedA = selectedB;
             selectedB = -1;
-            Debug.Log($"Unselected slot {index + 1}. Selection now: {SelectionString()}");
             return;
         }
 
         if (selectedB == index)
         {
             selectedB = -1;
-            Debug.Log($"Unselected slot {index + 1}. Selection now: {SelectionString()}");
             return;
         }
 
@@ -346,76 +454,56 @@ public class CombatManager : MonoBehaviour
             selectedA = selectedB;
             selectedB = index;
         }
-
-        Debug.Log($"Selected slot {index + 1}. Selection now: {SelectionString()}");
     }
 
-    private string SelectionString()
-    {
-        string a = selectedA == -1 ? "-" : (selectedA + 1).ToString();
-        string b = selectedB == -1 ? "-" : (selectedB + 1).ToString();
-        return $"[{a}, {b}]";
-    }
-
-    private void TryCut(bool horizontal)
-    {
-        if (cutsRemainingThisRound <= 0)
-        {
-            Debug.Log("No cuts remaining this round.");
-            return;
-        }
-
-        if (selectedA == -1 || selectedB == -1)
-        {
-            Debug.Log("Select TWO cards (1..7) before cutting.");
-            return;
-        }
-
-        var cardA = playerHand.GetAt(selectedA);
-        var cardB = playerHand.GetAt(selectedB);
-
-        if (cardA == null || cardB == null)
-        {
-            Debug.Log("One of the selected slots is empty.");
-            return;
-        }
-
-        // Cut ausführen
-        Debug.Log($"CUT {(horizontal ? "HORIZONTAL" : "VERTICAL")} between " +
-                  $"{cardA.GetName()} (slot {selectedA + 1}) and {cardB.GetName()} (slot {selectedB + 1})");
-
-        if (horizontal) CardCutter.CutHorizontal(cardA, cardB);
-        else CardCutter.CutVertical(cardA, cardB);
-
-        cutsRemainingThisRound--;
-        Debug.Log($"Cut done. Cuts remaining this round: {cutsRemainingThisRound}");
-
-        Debug.Log($"After cut: Slot {selectedA + 1} = {cardA.GetName()} | Slot {selectedB + 1} = {cardB.GetName()}");
-        playerHand.DebugPrintHand();
-        
-        //handView.RefreshCard(cardA);
-        //handView.RefreshCard(cardB);
-        //playerHand.NotifyChanged();
-    }
-    
 
     public void ExecuteCutHorizontal(CardInstance a, CardInstance b)
     {
         if (cutsRemainingThisRound <= 0) return;
-
         CardCutter.CutHorizontal(a, b);
-
         cutsRemainingThisRound--;
-        // wenn ihr CardInstance.OnChanged nutzt, ruft CutHorizontal ggf. NotifyChanged auf
     }
 
     public void ExecuteCutVertical(CardInstance a, CardInstance b)
     {
         if (cutsRemainingThisRound <= 0) return;
-
         CardCutter.CutVertical(a, b);
-
         cutsRemainingThisRound--;
+    }
+
+    public void OnEnemyClicked(EnemyInstance enemy)
+    {
+        if (!waitingForTarget) return;
+        if (enemy == null || enemy.IsDead || !enemy.IsTargetable) return;
+
+        pending.hasChosenTarget = true;
+        pending.chosenTarget = enemy;
+
+        var ctx = new CombatContext(player, playerDeck, playerHand, activeEnemies, rng);
+
+        // ab dem Modul weiter, das beim ersten Durchlauf Target brauchte
+        var res = CardResolver.ResolveFrom(
+            pending.card,
+            ctx,
+            startIndex: pending.nextModuleIndex,
+            chosenTarget: pending.chosenTarget
+        );
+        
+        if (res.needsTarget)
+        {
+            Debug.LogError("Still needs target even though chosenTarget is set. Check ResolveModule logic.");
+            return;
+        }
+
+        // Karte finalisieren
+        FinishCardPlay(pending.card);
+
+        // cleanup
+        waitingForTarget = false;
+        pending = default;
+        ExitTargetSelectMode();
+
+        enemyFieldView.RefreshAll();
     }
 
 }

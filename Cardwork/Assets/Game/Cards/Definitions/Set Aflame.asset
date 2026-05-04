@@ -1,0 +1,59 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ca2d2f5518cf3434490c0a07eff6955d, type: 3}
+  m_Name: Set Aflame
+  m_EditorClassIdentifier: Assembly-CSharp::CardDefinition
+  baseId: Expansion04
+  topLeft:
+    color: 1
+    value: 2
+    artwork: {fileID: 21300000, guid: 50f12db5b7157ed4abb9d06b9c735a5c, type: 3}
+    namePartText: 
+    effectModule:
+      type: 0
+      xColor: 3
+      yColor: 3
+      damageDistribution: 0
+      effectTextOverride: 
+  topRight:
+    color: 0
+    value: 3
+    artwork: {fileID: 21300000, guid: 12d0fca22125e3e428f13ef010a95f32, type: 3}
+    namePartText: 
+    effectModule:
+      type: 0
+      xColor: 3
+      yColor: 3
+      damageDistribution: 0
+      effectTextOverride: 
+  bottomLeft:
+    color: 2
+    value: 2
+    artwork: {fileID: 0}
+    namePartText: Set
+    effectModule:
+      type: 8
+      xColor: 0
+      yColor: 3
+      damageDistribution: 0
+      effectTextOverride: 
+  bottomRight:
+    color: 3
+    value: 3
+    artwork: {fileID: 0}
+    namePartText: Aflame
+    effectModule:
+      type: 6
+      xColor: 0
+      yColor: 3
+      damageDistribution: 0
+      effectTextOverride: 

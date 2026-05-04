@@ -1,0 +1,59 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ca2d2f5518cf3434490c0a07eff6955d, type: 3}
+  m_Name: MarkingHex
+  m_EditorClassIdentifier: Assembly-CSharp::CardDefinition
+  baseId: Expansion01
+  topLeft:
+    color: 3
+    value: 3
+    artwork: {fileID: 21300000, guid: 02a25811c5cf0964d83ae278d42148c4, type: 3}
+    namePartText: 
+    effectModule:
+      type: 0
+      xColor: 3
+      yColor: 3
+      damageDistribution: 0
+      effectTextOverride: 
+  topRight:
+    color: 2
+    value: 2
+    artwork: {fileID: 21300000, guid: 3c025281a3aa7444185d29d5c0c3698d, type: 3}
+    namePartText: 
+    effectModule:
+      type: 0
+      xColor: 3
+      yColor: 3
+      damageDistribution: 0
+      effectTextOverride: 
+  bottomLeft:
+    color: 1
+    value: 1
+    artwork: {fileID: 0}
+    namePartText: Marking
+    effectModule:
+      type: 5
+      xColor: 3
+      yColor: 4
+      damageDistribution: 0
+      effectTextOverride: 
+  bottomRight:
+    color: 0
+    value: 1
+    artwork: {fileID: 0}
+    namePartText: Hex
+    effectModule:
+      type: 1
+      xColor: 2
+      yColor: 4
+      damageDistribution: 0
+      effectTextOverride: 

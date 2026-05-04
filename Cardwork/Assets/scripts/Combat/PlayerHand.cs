@@ -53,6 +53,18 @@ public class PlayerHand : MonoBehaviour
             DebugPrintHand();
         }
     }
+    
+    public CardInstance RemoveRandom()
+    {
+        if (cards.Count == 0) return null;
+        int idx = UnityEngine.Random.Range(0, cards.Count);
+        var c = cards[idx];
+        cards.RemoveAt(idx);
+        OnHandChanged?.Invoke();
+        DebugPrintHand();
+        return c;
+    }
+
 
     public void DebugPrintHand()
     {
@@ -61,4 +73,11 @@ public class PlayerHand : MonoBehaviour
             s += $"[{i+1}:{cards[i].GetName()}] ";
         Debug.Log(s);
     }
+    
+    public void Clear()
+    {
+        cards.Clear();
+        OnHandChanged?.Invoke();
+    }
+
 }

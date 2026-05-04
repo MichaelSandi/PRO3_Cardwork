@@ -1,0 +1,189 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ef701058455093c4b8889d3d0ff5f1f7, type: 3}
+  m_Name: Map10Layout
+  m_EditorClassIdentifier: Assembly-CSharp::MapLayoutDefinition
+  nodes:
+  - id: 1.0_start
+    position: {x: -1.49, y: 2484.66, z: -3508.99}
+    isStart: 1
+    isEnd: 0
+    isPOI: 0
+  - id: 2.1
+    position: {x: -9.46, y: 2483.04, z: -3492.13}
+    isStart: 0
+    isEnd: 0
+    isPOI: 1
+  - id: 2.2
+    position: {x: 7.8, y: 2483.04, z: -3492.2}
+    isStart: 0
+    isEnd: 0
+    isPOI: 1
+  - id: 3.1
+    position: {x: -21.03, y: 2483.04, z: -3472.43}
+    isStart: 0
+    isEnd: 0
+    isPOI: 1
+  - id: 3.2
+    position: {x: -0.45, y: 2483.04, z: -3473.12}
+    isStart: 0
+    isEnd: 0
+    isPOI: 1
+  - id: 3.3
+    position: {x: 20.38, y: 2483.04, z: -3471.53}
+    isStart: 0
+    isEnd: 0
+    isPOI: 1
+  - id: 4.1
+    position: {x: -4.6, y: 2483.04, z: -3447.17}
+    isStart: 0
+    isEnd: 0
+    isPOI: 1
+  - id: 4.2
+    position: {x: 12.47, y: 2483.04, z: -3448.75}
+    isStart: 0
+    isEnd: 0
+    isPOI: 1
+  - id: 5.1
+    position: {x: -8.66, y: 2483.04, z: -3424.66}
+    isStart: 0
+    isEnd: 0
+    isPOI: 1
+  - id: 5.2
+    position: {x: 7.45, y: 2483.04, z: -3425.27}
+    isStart: 0
+    isEnd: 0
+    isPOI: 1
+  - id: 5.3
+    position: {x: 23.38, y: 2483.04, z: -3424.96}
+    isStart: 0
+    isEnd: 0
+    isPOI: 1
+  - id: 6.1
+    position: {x: -0.38, y: 2483.04, z: -3403.88}
+    isStart: 0
+    isEnd: 0
+    isPOI: 1
+  - id: 6.2
+    position: {x: 16.24, y: 2483.04, z: -3405.38}
+    isStart: 0
+    isEnd: 0
+    isPOI: 1
+  - id: 7.1
+    position: {x: -15.49, y: 2483.04, z: -3389.05}
+    isStart: 0
+    isEnd: 0
+    isPOI: 1
+  - id: 7.2
+    position: {x: 4.55, y: 2483.04, z: -3388.2}
+    isStart: 0
+    isEnd: 0
+    isPOI: 1
+  - id: 8.1
+    position: {x: -4.63, y: 2483.04, z: -3366.75}
+    isStart: 0
+    isEnd: 0
+    isPOI: 1
+  - id: 8.2
+    position: {x: 16, y: 2483.04, z: -3367.06}
+    isStart: 0
+    isEnd: 0
+    isPOI: 1
+  - id: 9.1
+    position: {x: -19.59, y: 2483.04, z: -3350.42}
+    isStart: 0
+    isEnd: 0
+    isPOI: 1
+  - id: 9.2
+    position: {x: -0.26, y: 2483.04, z: -3349.28}
+    isStart: 0
+    isEnd: 0
+    isPOI: 1
+  - id: 9.3
+    position: {x: 20.78, y: 2483.04, z: -3349.31}
+    isStart: 0
+    isEnd: 0
+    isPOI: 1
+  - id: 10.1
+    position: {x: -10.01, y: 2483.04, z: -3328.6}
+    isStart: 0
+    isEnd: 0
+    isPOI: 1
+  - id: 10.2
+    position: {x: 11.3, y: 2483.04, z: -3327.5}
+    isStart: 0
+    isEnd: 0
+    isPOI: 1
+  - id: 11.0_end
+    position: {x: -0.61, y: 2483.04, z: -3305.7}
+    isStart: 0
+    isEnd: 1
+    isPOI: 0
+  edges:
+  - fromId: 1.0_start
+    toId: 2.1
+  - fromId: 1.0_start
+    toId: 2.2
+  - fromId: 2.1
+    toId: 3.1
+  - fromId: 2.1
+    toId: 3.2
+  - fromId: 2.2
+    toId: 3.3
+  - fromId: 3.1
+    toId: 4.1
+  - fromId: 3.2
+    toId: 4.1
+  - fromId: 3.3
+    toId: 4.1
+  - fromId: 3.3
+    toId: 4.2
+  - fromId: 4.1
+    toId: 5.1
+  - fromId: 4.1
+    toId: 5.2
+  - fromId: 4.2
+    toId: 5.3
+  - fromId: 5.1
+    toId: 6.1
+  - fromId: 5.2
+    toId: 6.1
+  - fromId: 5.3
+    toId: 6.2
+  - fromId: 6.1
+    toId: 7.1
+  - fromId: 6.1
+    toId: 7.2
+  - fromId: 6.2
+    toId: 7.2
+  - fromId: 7.1
+    toId: 8.1
+  - fromId: 7.2
+    toId: 8.1
+  - fromId: 7.2
+    toId: 8.2
+  - fromId: 8.1
+    toId: 9.1
+  - fromId: 8.1
+    toId: 9.2
+  - fromId: 8.2
+    toId: 9.3
+  - fromId: 9.1
+    toId: 10.1
+  - fromId: 9.2
+    toId: 10.2
+  - fromId: 9.3
+    toId: 10.2
+  - fromId: 10.1
+    toId: 11.0_end
+  - fromId: 10.2
+    toId: 11.0_end

@@ -15,53 +15,57 @@ public class CutUIController : MonoBehaviour
         if (interaction == null) interaction = FindFirstObjectByType<HandInteractionController>();
         if (combat == null) combat = FindFirstObjectByType<CombatManager>();
 
-        scissorsButton.onClick.AddListener(OnScissors);
-        cancelButton.onClick.AddListener(OnCancel);
-        confirmButton.onClick.AddListener(OnConfirm);
+        if (scissorsButton != null) scissorsButton.onClick.AddListener(OnScissors);
+        if (cancelButton != null) cancelButton.onClick.AddListener(OnCancel);
+        if (confirmButton != null) confirmButton.onClick.AddListener(OnConfirm);
+    }
+
+    private void OnDestroy()
+    {
+        if (scissorsButton != null) scissorsButton.onClick.RemoveListener(OnScissors);
+        if (cancelButton != null) cancelButton.onClick.RemoveListener(OnCancel);
+        if (confirmButton != null) confirmButton.onClick.RemoveListener(OnConfirm);
     }
 
     private void Update()
     {
-        // Buttons live updaten
-        bool canCut = combat.CutsRemainingThisRound > 0 && combat.State == CombatState.PlayerPlayCard;
-        scissorsButton.interactable = canCut && interaction.mode == HandInteractionController.InteractionMode.PlayMode;
+        if (combat == null || interaction == null) return;
 
-        
-        //bool isPlay = interaction.mode == HandInteractionController.InteractionMode.PlayMode;
+        bool canCut = combat.CutsRemainingThisRound > 0 && combat.State == CombatState.PlayerPlayCard;
+        if (scissorsButton != null)
+            scissorsButton.interactable = canCut && interaction.mode == HandInteractionController.InteractionMode.PlayMode;
+
         bool isSelect = interaction.mode == HandInteractionController.InteractionMode.CutSelectMode;
         bool isAxis = interaction.mode == HandInteractionController.InteractionMode.CutAxisMode;
 
-        cancelButton.gameObject.SetActive(isSelect || isAxis);
-        confirmButton.gameObject.SetActive(isSelect || isAxis);
+        if (cancelButton != null) cancelButton.gameObject.SetActive(isSelect || isAxis);
+        if (confirmButton != null) confirmButton.gameObject.SetActive(isSelect || isAxis);
 
-        // Cancel (X) darf IMMER abbrechen
-        cancelButton.interactable = isSelect || isAxis;
+        if (cancelButton != null) cancelButton.interactable = isSelect || isAxis;
 
-        // Confirm (Hakerl)
         if (isSelect)
         {
-            confirmButton.interactable = interaction.SelectedCount == 2;
+            if (confirmButton != null) confirmButton.interactable = interaction.SelectedCount == 2;
         }
         else
         {
-            // CutAxisMode oder PlayMode
-            confirmButton.interactable = false;
+            if (confirmButton != null) confirmButton.interactable = false;
         }
     }
 
     private void OnScissors()
     {
-        interaction.EnterCutSelectMode();
+        interaction?.EnterCutSelectMode();
     }
 
     private void OnCancel()
     {
-        interaction.EnterPlayMode();
+        interaction?.EnterPlayMode();
     }
 
     private void OnConfirm()
     {
-        interaction.ConfirmCutSelection();
+        interaction?.ConfirmCutSelection();
     }
 
 }

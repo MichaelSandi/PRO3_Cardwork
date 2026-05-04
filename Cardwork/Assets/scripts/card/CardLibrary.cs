@@ -28,10 +28,14 @@ public class CardLibrary : MonoBehaviour
         }
 
         Debug.Log("Loaded " + allCards.Count + " CardDefinitions into CardLibrary.");
-#else
-        Debug.LogWarning("LoadAllCards() funktioniert nur im Editor!");
-#endif
     }
+#else
+    [ContextMenu("Load All CardDefinitions")]
+    public void LoadAllCards()
+    {
+        Debug.LogWarning("LoadAllCards() funktioniert nur im Editor!");
+    }
+#endif
 
     // Runtime: neue Instanz ziehen
     public CardInstance GetCardInstance(int index)

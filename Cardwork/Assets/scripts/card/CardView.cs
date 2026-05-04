@@ -17,10 +17,12 @@ public class CardView : MonoBehaviour
 
     [Header("TopLeft")]
     [SerializeField] private SpriteRenderer tlColorIcon;
+    [SerializeField] private SpriteRenderer tlArtwork;
     [SerializeField] private TMP_Text tlValueText;
 
     [Header("TopRight")]
     [SerializeField] private SpriteRenderer trColorIcon;
+    [SerializeField] private SpriteRenderer trArtwork;
     [SerializeField] private TMP_Text trValueText;
 
     [Header("BottomLeft")]
@@ -87,10 +89,10 @@ public class CardView : MonoBehaviour
     {
         if (bound == null) return;
 
-        ApplyCorner(bound.topLeft, tlColorIcon, tlValueText, CornerPosition.TopLeft);
-        ApplyCorner(bound.topRight, trColorIcon, trValueText, CornerPosition.TopRight);
-        ApplyCorner(bound.bottomLeft, blColorIcon, blValueText, CornerPosition.BottomLeft);
-        ApplyCorner(bound.bottomRight, brColorIcon, brValueText, CornerPosition.BottomRight);
+        ApplyCorner(bound.topLeft, tlColorIcon, tlArtwork, tlValueText, CornerPosition.TopLeft);
+        ApplyCorner(bound.topRight, trColorIcon,trArtwork, trValueText, CornerPosition.TopRight);
+        ApplyCorner(bound.bottomLeft, blColorIcon, null, blValueText, CornerPosition.BottomLeft);
+        ApplyCorner(bound.bottomRight, brColorIcon, null, brValueText, CornerPosition.BottomRight);
 
 
         if (blNamePartText != null) blNamePartText.text = bound.bottomLeft?.namePartText ?? "";
@@ -105,6 +107,7 @@ public class CardView : MonoBehaviour
     private void ApplyCorner(
         CardCorner corner,
         SpriteRenderer icon,
+        SpriteRenderer artwork,
         TMP_Text valueText,
         CornerPosition pos)
     {
@@ -112,6 +115,7 @@ public class CardView : MonoBehaviour
         {
             if (icon != null) icon.sprite = null;
             if (valueText != null) valueText.text = "";
+            if(artwork != null) artwork.sprite = null;
             return;
         }
 
@@ -120,6 +124,9 @@ public class CardView : MonoBehaviour
 
         if (valueText != null)
             valueText.text = corner.value.ToString();
+        
+        if(artwork != null)
+            artwork.sprite = corner.artwork;
     }
 
 
@@ -145,29 +152,52 @@ public class CardView : MonoBehaviour
         if (!string.IsNullOrWhiteSpace(m.effectTextOverride))
             return m.effectTextOverride;
 
-        string x = $"[sum {m.xColor}]";
-        string y = $"[sum {m.yColor}]";
+        int xVal = bound.GetSum(m.xColor);
+        int yVal = bound.GetSum(m.yColor);
+        string x = $"{FormatColoredSum(xVal, m.xColor)}";
+        string y = $"{FormatColoredSum(yVal, m.yColor)}";
+
 
         return m.type switch
         {
-            EffectType.RegainLife => $"Regain life {x}",
-            EffectType.GainArmor => $"You gain {x} Armor",
-            EffectType.DrawCards => $"Draw {x} cards",
-            EffectType.DiscardCards => $"Discard {x} cards",
-            EffectType.Marked => $"Apply Marked {x}",
-            EffectType.Burning => $"Apply Burning {x}",
-            EffectType.Weakened => $"Apply Weakened {x}",
+            EffectType.RegainLife => $"Heal {x}",
+            EffectType.GainArmor => $"Shield {x}",
+            EffectType.DrawCards => $"Draw {x}",
+            EffectType.DiscardCards => $"Discard {x}",
+            EffectType.Marked => $"Mark {x}",
+            EffectType.Burning => $"Ignite {x}",
+            EffectType.Weakened => $"Weaken {x}",
 
             EffectType.DealDamage => m.damageDistribution switch
             {
-                DamageDistribution.OneEnemy => $"Deal {x} damage to one enemy",
-                DamageDistribution.AllEnemies => $"Deal {x} damage to all enemies",
-                DamageDistribution.SplitAmongAllEnemies => $"Deal {x} damage randomly split among all enemies",
-                DamageDistribution.SplitAmongYRandomEnemies => $"Deal {x} damage randomly split among {y} random enemies",
+                DamageDistribution.OneEnemy => $"Deal {x}",
+                DamageDistribution.AllEnemies => $"Deal {x} to all",
+                DamageDistribution.SplitAmongAllEnemies => $"Deal {x} randomly split",
+                DamageDistribution.SplitAmongYRandomEnemies => $"Deal {x} randomly among {y} enemies",
                 _ => $"Deal {x} damage"
             },
 
             _ => ""
         };
     }
+    
+    private string FormatColoredSum(int value, CardColors color)
+    {
+        string hex = GetHexColor(color);
+        return $"<b><color={hex}>{value}</color></b>";
+    }
+
+    private string GetHexColor(CardColors color)
+    {
+        return color switch
+        {
+            CardColors.Pink   => "#b81256",
+            CardColors.Blue   => "#2d2fba",
+            CardColors.Orange => "#ad6621",
+            CardColors.Yellow => "#a79727",
+            CardColors.Silver => "#7e95ab",
+            _                 => "#FFFFFF"
+        };
+    }
+    
 }

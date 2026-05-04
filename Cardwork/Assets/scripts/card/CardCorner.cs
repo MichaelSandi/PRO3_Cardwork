@@ -8,7 +8,9 @@ public enum CardColors
     Yellow,
     Pink,
     Blue,
-    Silver //zählt für jede Farbe mit
+    Silver, //zählt für jede Farbe mit
+    None,
+    ModifyOppositeCorner
 }
 
 public enum DamageDistribution
@@ -35,7 +37,13 @@ public enum EffectType
     Weakened,
 
     // Damage
-    DealDamage
+    DealDamage,
+    
+    //Special Cases
+    CopyOtherEffect,
+    GainExtraTurn,
+    NoEffect,
+    LifeSteal
 }
 
 
@@ -45,6 +53,9 @@ public class CardCorner
 {
     public CardColors color;
     public int value;
+    
+    //Nur genutzt in TopLeft/TopRight
+    public Sprite artwork;
 
     // Nur genutzt in BottomLeft/BottomRight
     public string namePartText;
@@ -58,6 +69,7 @@ public class CardCorner
         {
             color = color,
             value = value,
+            artwork = artwork,
             namePartText = namePartText,
             effectModule = effectModule != null ? effectModule.Clone() : null
         };

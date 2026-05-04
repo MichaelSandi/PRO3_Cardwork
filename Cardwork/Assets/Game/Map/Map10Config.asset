@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4f5d75a9c6225d45b8efe885f9fcd5e, type: 3}
+  m_Name: Map10Config
+  m_EditorClassIdentifier: Assembly-CSharp::MapGenerationConfig
+  weightFight: 60
+  weightCampfire: 10
+  weightChest: 10
+  weightMystery: 20
+  chestOptionsMin: 1
+  chestOptionsMax: 2
+  healMissingHpPercent: 0.5
+  healMinimum: 5
